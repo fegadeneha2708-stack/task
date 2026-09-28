@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskTrack - Task Tracking App</title>
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f5f7fb;color:#182033}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#172033;color:white;padding:28px 18px;display:flex;flex-direction:column}
+.brand{font-size:22px;font-weight:800;margin:0 12px 35px}
+nav{display:grid;gap:8px}
+.nav-item{background:transparent;color:#b9c2d3;text-align:left;padding:13px 14px;border-radius:10px}
+.nav-item:hover,.nav-item.active{background:#2b3851;color:#fff}
+.side-note{margin-top:auto;background:#222e45;padding:16px;border-radius:12px;color:#dfe5ef;font-size:13px;line-height:1.5}
+.side-note strong{display:block;margin-bottom:6px;color:white}
+.main{flex:1;padding:35px;max-width:1300px;margin:auto;width:100%}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+h1{font-size:30px}.topbar p{color:#758096;margin-top:5px}
+.primary{background:#5267e8;color:white;padding:12px 19px;border-radius:10px;font-weight:700;box-shadow:0 5px 14px #5267e833}
+.primary:hover{background:#4056d5}.full{width:100%;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px}
+.stat-card{background:white;border:1px solid #e7eaf1;border-radius:14px;padding:20px;box-shadow:0 3px 12px #1b27420a}
+.stat-card span{color:#778197;font-size:14px}.stat-card strong{display:block;font-size:28px;margin-top:8px}
+.toolbar{display:flex;gap:12px;margin-bottom:20px}
+.toolbar input{flex:1}.toolbar input,.toolbar select{background:white;border:1px solid #dfe3eb;border-radius:10px;padding:12px 14px;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:#5267e8}
+.task-list{display:grid;gap:13px}
+.task{background:white;border:1px solid #e7eaf1;border-radius:14px;padding:18px;display:flex;gap:15px;align-items:flex-start;box-shadow:0 3px 12px #1b27420a}
+.check{width:23px;height:23px;border:2px solid #c9ced9;border-radius:7px;flex:none;background:white;color:white}
+.task.done .check{background:#35a56b;border-color:#35a56b}
+.task-content{flex:1;min-width:0}.task-title{font-size:17px;font-weight:750}.task.done .task-title{text-decoration:line-through;color:#9299a8}
+.task-desc{color:#737d91;font-size:14px;margin:6px 0 10px;white-space:pre-wrap}
+.meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}
+.badge{padding:5px 8px;border-radius:20px;background:#f0f2f7;color:#667087}
+.priority-high{background:#ffe8e8;color:#c43f3f}.priority-medium{background:#fff3d8;color:#9b6b00}.priority-low{background:#e4f7ec;color:#277d4d}
+.actions{display:flex;gap:7px}.icon-btn{background:#f2f4f8;padding:8px;border-radius:8px}.icon-btn:hover{background:#e7eaf0}
+.empty{text-align:center;padding:65px 20px;color:#7a8497;display:none}.empty div{font-size:45px}.empty h2{color:#30394b;margin:8px 0}
+.modal{position:fixed;inset:0;background:#0c142499;display:grid;place-items:center;padding:20px;z-index:5}
+.hidden{display:none}.modal-box{background:white;width:min(520px,100%);border-radius:17px;padding:26px;position:relative;box-shadow:0 20px 60px #0003}
+.modal-box h2{margin-bottom:20px}.close{position:absolute;right:18px;top:15px;background:#f1f3f7;border-radius:50%;width:32px;height:32px;font-size:22px}
+form{display:grid;gap:15px}label{font-size:13px;font-weight:700;color:#4b5568;display:grid;gap:7px}
+label input,label textarea,label select{border:1px solid #dfe3eb;border-radius:9px;padding:11px;outline:none;font-weight:400;color:#20283a}
+label textarea{resize:vertical}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.sidebar{width:75px;padding:20px 10px}.brand{font-size:0;text-align:center}.brand:first-letter{font-size:22px} .nav-item{font-size:0;text-align:center}.nav-item::first-letter{font-size:18px}.side-note{display:none}.main{padding:22px 15px}.stats{grid-template-columns:1fr}.toolbar{flex-direction:column}.topbar{align-items:flex-start;gap:15px}.topbar h1{font-size:25px}}
+
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">✓ TaskTrack</div>
+      <nav>
+        <button class="nav-item active" data-filter="all">📋 All Tasks</button>
+        <button class="nav-item" data-filter="pending">⏳ Pending</button>
+        <button class="nav-item" data-filter="completed">✅ Completed</button>
+      </nav>
+      <div class="side-note">
+        <strong>Task Tracking App</strong>
+        <p>Organize your daily work and stay productive.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Task Dashboard</h1>
+          <p>Manage your tasks in one place.</p>
+        </div>
+        <button class="primary" id="openModal">+ Add Task</button>
+      </header>
+
+      <section class="stats">
+        <div class="stat-card"><span>Total Tasks</span><strong id="totalCount">0</strong></div>
+        <div class="stat-card"><span>Pending</span><strong id="pendingCount">0</strong></div>
+        <div class="stat-card"><span>Completed</span><strong id="completedCount">0</strong></div>
+      </section>
+
+      <section class="toolbar">
+        <input id="search" type="search" placeholder="🔍 Search tasks...">
+        <select id="priorityFilter">
+          <option value="all">All Priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="sortBy">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="due">Due Date</option>
+          <option value="priority">Priority</option>
+        </select>
+      </section>
+
+      <section id="taskList" class="task-list"></section>
+      <div id="emptyState" class="empty">
+        <div>📝</div>
+        <h2>No tasks found</h2>
+        <p>Add your first task to get started.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal hidden" id="taskModal">
+    <div class="modal-box">
+      <button class="close" id="closeModal">×</button>
+      <h2 id="modalTitle">Add New Task</h2>
+      <form id="taskForm">
+        <input type="hidden" id="taskId">
+        <label>Task Title
+          <input id="title" required maxlength="80" placeholder="e.g. Complete project report">
+        </label>
+        <label>Description
+          <textarea id="description" rows="3" placeholder="Add task details..."></textarea>
+        </label>
+        <div class="form-grid">
+          <label>Priority
+            <select id="priority">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+          <label>Due Date
+            <input id="dueDate" type="date">
+          </label>
+        </div>
+        <label>Category
+          <input id="category" maxlength="30" placeholder="College, Work, Personal">
+        </label>
+        <button class="primary full" type="submit">Save Task</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+const $=id=>document.getElementById(id);
+let tasks=JSON.parse(localStorage.getItem("tasktrack_tasks")||"[]");
+let currentFilter="all";
+
+function save(){localStorage.setItem("tasktrack_tasks",JSON.stringify(tasks));}
+function esc(s=""){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function render(){
+  const q=$("search").value.toLowerCase().trim(), pf=$("priorityFilter").value, sort=$("sortBy").value;
+  let list=tasks.filter(t=>{
+    const status=currentFilter==="all"||t.status===currentFilter;
+    const priority=pf==="all"||t.priority===pf;
+    const text=(t.title+" "+t.description+" "+t.category).toLowerCase().includes(q);
+    return status&&priority&&text;
+  });
+  const order={high:3,medium:2,low:1};
+  list.sort((a,b)=>{
+    if(sort==="oldest") return a.created-b.created;
+    if(sort==="due") return (a.dueDate||"9999").localeCompare(b.dueDate||"9999");
+    if(sort==="priority") return order[b.priority]-order[a.priority];
+    return b.created-a.created;
+  });
+  $("taskList").innerHTML=list.map(t=>`
+    <article class="task ${t.status==="completed"?"done":""}">
+      <button class="check" title="Toggle status" onclick="toggleTask('${t.id}')">${t.status==="completed"?"✓":""}</button>
+      <div class="task-content">
+        <div class="task-title">${esc(t.title)}</div>
+        ${t.description?`<div class="task-desc">${esc(t.description)}</div>`:""}
+        <div class="meta">
+          <span class="badge priority-${t.priority}">${t.priority[0].toUpperCase()+t.priority.slice(1)} Priority</span>
+          ${t.category?`<span class="badge">🏷 ${esc(t.category)}</span>`:""}
+          ${t.dueDate?`<span class="badge">📅 ${t.dueDate}</span>`:""}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="Edit" onclick="editTask('${t.id}')">✏️</button>
+        <button class="icon-btn" title="Delete" onclick="deleteTask('${t.id}')">🗑️</button>
+      </div>
+    </article>`).join("");
+  $("emptyState").style.display=list.length?"none":"block";
+  $("totalCount").textContent=tasks.length;
+  $("pendingCount").textContent=tasks.filter(t=>t.status==="pending").length;
+  $("completedCount").textContent=tasks.filter(t=>t.status==="completed").length;
+}
+function openModal(task=null){
+  $("taskModal").classList.remove("hidden");
+  $("modalTitle").textContent=task?"Edit Task":"Add New Task";
+  $("taskId").value=task?.id||"";
+  $("title").value=task?.title||"";
+  $("description").value=task?.description||"";
+  $("priority").value=task?.priority||"medium";
+  $("dueDate").value=task?.dueDate||"";
+  $("category").value=task?.category||"";
+  $("title").focus();
+}
+function closeModal(){$("taskModal").classList.add("hidden");$("taskForm").reset();$("taskId").value="";}
+$("openModal").onclick=()=>openModal();$("closeModal").onclick=closeModal;
+$("taskModal").onclick=e=>{if(e.target.id==="taskModal")closeModal()};
+$("taskForm").onsubmit=e=>{
+  e.preventDefault();
+  const id=$("taskId").value;
+  const data={title:$("title").value.trim(),description:$("description").value.trim(),priority:$("priority").value,dueDate:$("dueDate").value,category:$("category").value.trim()};
+  if(id){const t=tasks.find(x=>x.id===id);Object.assign(t,data);}
+  else tasks.push({id:Date.now().toString(),...data,status:"pending",created:Date.now()});
+  save();closeModal();render();
+};
+function toggleTask(id){const t=tasks.find(x=>x.id===id);if(t){t.status=t.status==="completed"?"pending":"completed";save();render();}}
+function editTask(id){const t=tasks.find(x=>x.id===id);if(t)openModal(t);}
+function deleteTask(id){if(confirm("Delete this task?")){tasks=tasks.filter(t=>t.id!==id);save();render();}}
+document.querySelectorAll(".nav-item").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentFilter=b.dataset.filter;render();
+});
+$("search").oninput=render;$("priorityFilter").onchange=render;$("sortBy").onchange=render;
+render();
+
+</script>
+</body>
+</html>
